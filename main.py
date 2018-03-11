@@ -131,9 +131,9 @@ class LabelTool():
 ##            return
         # get image list
         self.imageDir = os.path.join(r'./Images', '%03d' %(self.category))
-        self.imageList = glob.glob(os.path.join(self.imageDir, '*.JPEG'))
+        self.imageList = glob.glob(os.path.join(self.imageDir, '*'))
         if len(self.imageList) == 0:
-            print 'No .JPEG images found in the specified dir!'
+            print 'No images found in the specified directory!'
             return
 
         # default to the 1st image in the collection
@@ -145,30 +145,29 @@ class LabelTool():
         if not os.path.exists(self.outDir):
             os.mkdir(self.outDir)
 
-        # load example bboxes
+        # load example bboxes if they exist
         self.egDir = os.path.join(r'./Examples', '%03d' %(self.category))
-        if not os.path.exists(self.egDir):
-            return
-        filelist = glob.glob(os.path.join(self.egDir, '*.JPEG'))
-        self.tmp = []
-        self.egList = []
-        random.shuffle(filelist)
-        for (i, f) in enumerate(filelist):
-            if i == 3:
-                break
-            im = Image.open(f)
-            r = min(SIZE[0] / im.size[0], SIZE[1] / im.size[1])
-            new_size = int(r * im.size[0]), int(r * im.size[1])
-            self.tmp.append(im.resize(new_size, Image.ANTIALIAS))
-            self.egList.append(ImageTk.PhotoImage(self.tmp[-1]))
-            self.egLabels[i].config(image = self.egList[-1], width = SIZE[0], height = SIZE[1])
-
+        if os.path.exists(self.egDir):
+            filelist = glob.glob(os.path.join(self.egDir, '*')) # will be empty if no examples
+            self.tmp = []
+            self.egList = []
+            random.shuffle(filelist)
+            for (i, f) in enumerate(filelist):
+                if i == 3:
+                    break
+                im = Image.open(f)
+                r = min(SIZE[0] / im.size[0], SIZE[1] / im.size[1])
+                new_size = int(r * im.size[0]), int(r * im.size[1])
+                self.tmp.append(im.resize(new_size, Image.ANTIALIAS))
+                self.egList.append(ImageTk.PhotoImage(self.tmp[-1]))
+                self.egLabels[i].config(image = self.egList[-1], width = SIZE[0], height = SIZE[1])
         self.loadImage()
         print '%d images loaded from %s' %(self.total, s)
 
     def loadImage(self):
         # load image
         imagepath = self.imageList[self.cur - 1]
+        print imagepath
         self.img = Image.open(imagepath)
         self.tkimg = ImageTk.PhotoImage(self.img)
         self.mainPanel.config(width = max(self.tkimg.width(), 400), height = max(self.tkimg.height(), 400))
